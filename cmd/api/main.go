@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"food-truck/pkg/handlers"
 	"food-truck/pkg/repository"
 	"food-truck/pkg/service"
@@ -19,22 +20,22 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// nearbyTrucks, err := srv.GetFoodTruckNearbyLocation(float64(37.809639), float64(-122.410248), float64(1))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// for _, nearbyTruck := range nearbyTrucks {
-	// 	fmt.Println(nearbyTruck)
-	// }
-
-	// location, err := srv.GetFoodTruckLocation(float64(37.724297778527635), float64(-122.45937730954839))
-	// fmt.Println(location)
-
 	handler := handlers.NewFoodTruckHandler(srv)
 
+	var text = `Welcome to Food Truck Service
+	The service opens up port 8088 and provides the following endpoints:
+	GET http://localhost:8088/foodtrucks/:latitude/:longitude/:radius (for Proximity)
+	GET http://localhost:8088/foodtrucks/:latitude/:longitude (for exact location)
+	GET http://localhost:8088/foodtrucks/ (for list of FoodTrucks)
+	`
+
+	fmt.Println(text)
+
+	gin.SetMode(gin.ReleaseMode)
 	route := gin.New()
-	route.GET("/:latitude/:longitude", handler.HandleGetFoodTruckLocation)
-	route.GET("/:latitude/:longitude/:radius", handler.HandleGetFoodTruckNearbyLocation)
+	route.GET("/foodtrucks/:latitude/:longitude", handler.HandleGetFoodTruckLocation)
+	route.GET("/foodtrucks/:latitude/:longitude/:radius", handler.HandleGetFoodTruckNearbyLocation)
+	route.GET("/foodtrucks/", handler.HandleGetFoodTrucks)
 	route.Run(":8088")
 
 }

@@ -13,8 +13,9 @@ import (
 
 type FoodTruckRepository interface {
 	BuildFoodTruckDataMap() error
-	GetFoodTruckNearbyLocation(lat float64, lon float64, radiusMiles float64) []data.FoodTruckNearby
+	GetFoodTruckNearbyLocation(lat float64, lon float64, radiusMiles float64) ([]data.FoodTruckNearby, error)
 	GetFoodTruckLocation(latitude float64, longitude float64) (*data.FoodTruckLocation, error)
+	GetFoodTrucks() ([]data.FoodTruckLocation, error)
 }
 
 func NewFoodTruckRepository(url string) FoodTruckRepository {
@@ -67,7 +68,7 @@ func (ft *FoodTruckStorage) BuildFoodTruckDataMap() error {
 // to get the list of food trucks given the radius of current lat/lon (location)
 // This is the poor implementation as it scans the whole records (O n)
 // Obviously there is a better way, but the purpose of this is just to provide a good user experience
-func (ft *FoodTruckStorage) GetFoodTruckNearbyLocation(lat float64, lon float64, radiusMiles float64) []data.FoodTruckNearby {
+func (ft *FoodTruckStorage) GetFoodTruckNearbyLocation(lat float64, lon float64, radiusMiles float64) ([]data.FoodTruckNearby, error) {
 	var foodTrucksNearbies []data.FoodTruckNearby
 	origin := haversine.Coord{Lat: lat, Lon: lon}
 	for _, foodtruck := range ft.MemoryStore {
@@ -84,7 +85,7 @@ func (ft *FoodTruckStorage) GetFoodTruckNearbyLocation(lat float64, lon float64,
 			foodTrucksNearbies = append(foodTrucksNearbies, foodTruckNearby)
 		}
 	}
-	return foodTrucksNearbies
+	return foodTrucksNearbies, nil
 }
 
 // GetFoodTruckLocation given latitude and longitude
@@ -97,17 +98,26 @@ func (ft *FoodTruckStorage) GetFoodTruckLocation(latitude float64, longitude flo
 	return nil, errors.New("not found")
 }
 
+func (ft *FoodTruckStorage) GetFoodTrucks() ([]data.FoodTruckLocation, error) {
+	var foodTrucksLocation []data.FoodTruckLocation
+	for _, v := range ft.MemoryStore {
+		foodTrucksLocation = append(foodTrucksLocation, v)
+	}
+	return foodTrucksLocation, nil
+}
+
 func parseFoodTruckLocation(items []string) data.FoodTruckLocation {
 	lat, _ := strconv.ParseFloat(items[14], 64)
-	lon, _ := strconv.ParseFloat(items[15], 64)
+	long, _ := strconv.ParseFloat(items[15], 64)
 
 	return data.FoodTruckLocation{
 		FoodTruckName:       items[1],
+		FacilityType:        items[2],
 		LocationDescription: items[4],
 		Address:             items[5],
 		FoodItems:           items[11],
 		Latitude:            lat,
-		Longitude:           lon,
+		Longitude:           long,
 		Schedules:           items[17],
 	}
 }

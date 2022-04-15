@@ -49,6 +49,16 @@ func (ft *FoodTruckHandler) HandleGetFoodTruckLocation(c *gin.Context) {
 	c.JSON(200, foodTrucksLocation)
 }
 
+func (ft *FoodTruckHandler) HandleGetFoodTrucks(c *gin.Context) {
+
+	foodTrucks, err := ft.FoodTruckService.GetFoodTrucks()
+	if err != nil {
+		c.JSON(500, gin.H{"msg": err.Error()})
+		return
+	}
+	c.JSON(200, foodTrucks)
+}
+
 func (ft *FoodTruckHandler) validateLocation(c *gin.Context) (*Location, error) {
 	lat, ok := c.Params.Get("latitude")
 	if !ok {

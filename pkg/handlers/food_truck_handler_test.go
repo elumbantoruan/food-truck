@@ -88,11 +88,6 @@ func TestFoodTruckHandler_HandleGetFoodTruckLocation(t *testing.T) {
 
 func TestFoodTruckHandler_HandleGetFoodTrucksLocation(t *testing.T) {
 
-	ctx := gin.Context{}
-	ctx.Params = append(ctx.Params, gin.Param{Key: "latitude", Value: "1.05"})
-	ctx.Params = append(ctx.Params, gin.Param{Key: "longitude", Value: "5.05"})
-	ctx.Params = append(ctx.Params, gin.Param{Key: "radius", Value: "1.0"})
-
 	var repo MockRepository
 	var srv = MockService{Repository: &repo}
 	var ft = NewFoodTruckHandler(&srv)

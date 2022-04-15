@@ -76,7 +76,7 @@ Welcome to Food Truck Service
     GET http://localhost:8088/foodtrucks/ (for list of FoodTrucks)
 ```
 
-Note there is known issues in Golang 1.18 Darwin (Mac) build
+Note there is known issues in Golang 1.18 Darwin (Mac) build.  
 If you encounter this issue
 
 ``` text

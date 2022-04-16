@@ -12,7 +12,7 @@ Proximity provides the list of food trucks that are nearby the current location 
 The is the API:
 
 ``` text
-/foodtrucks/:latitude/:longitude/:radius
+GET /foodtrucks/:latitude/:longitude/:radius
 ```
 
 Note to demonstrate this feature, I picked Pier 39 location.  I was hungry but I like to get something to eat from food truck instead of having meal in fancy restaurants and I want to walk to get there.  So I entered this parameter in our Food Truck Service
@@ -41,7 +41,7 @@ This particular feature takes an exact location (latitude and longitude) and ret
 This is the API:
 
 ``` text
-/foodtrucks/:latitude/:longitude
+GET /foodtrucks/:latitude/:longitude
 ```
 
 ``` text
@@ -56,7 +56,7 @@ This feature is simply return all the list from [San Francisco's food truck open
 This is the API:
 
 ``` text
-/foodtrucks
+GET /foodtrucks
 ```
 
 ``` text

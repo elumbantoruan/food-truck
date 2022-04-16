@@ -92,6 +92,11 @@ go get -u golang.org/x/sys
 
 More information can be found [here](https://stackoverflow.com/questions/71507321/go-1-18-build-error-on-mac-unix-syscall-darwin-1-13-go253-golinkname-mus)
 
+## Data loader
+
+Food Truck service is a read heavy operation.  To scale the system, the ideal system must have a separate data loader.  It could be a simple cron job which fetch San Francisco open dataset in a daily basis,
+so it can capture a new business being added or an existing business being removed.  The cron job will then update the data storage.
+
 ## Artifacts
 
 ![image](artifacts/Screen_Shot_Proximity.png)  

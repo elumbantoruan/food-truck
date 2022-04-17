@@ -32,7 +32,7 @@ It's not efficient as it needs to evaluate or calculate every food truck locatio
 
 For scaling, we can take the list food trucks and put it visually into a map.  The entire map can be divided into smaller grids to group locations into smaller sets.  Since each set has the perimeter, we can calculate which set that the location is located.  Therefore we only to query a few grids to find nearby places.  Based on a given location and radius, we can traverse neighboring grids and only query these grids to find nearby places.  But what would happen if one grid has a lot of places and those places are not uniformly distributed among grids?  
 The problem can be solved if we can dynamically adjust our grid size so that whenever we have a grid with a lot places, we break it down to create smaller grids.
-A solution like [QuadTree](https://en.wikipedia.org/wiki/Quadtree) data structure will help in that scenario. It's a tree where each node has four children: top left, top right, bottom left, and bottom right.
+A solution like [QuadTree](https://en.wikipedia.org/wiki/Quadtree) data structure will help in that scenario. It's a tree where each node has four children nodes that represents north west, north east, south west, and south east.
 There are multiple ways to travel the nodes such as doing recursive from parent to child or more sophisticated approach.  This [document](https://www.merl.com/publications/docs/TR2002-41.pdf) provides a very good explanation of traversal methods.
 
 ## Food Truck location

@@ -8,25 +8,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewFoodTruckHandler(foodTruckService service.FoodTruckService) *FoodTruckHandler {
-	ft := &FoodTruckHandler{
-		FoodTruckService: foodTruckService,
+func NewHandler(service service.Service) *Handler {
+	hd := &Handler{
+		Service: service,
 	}
-	return ft
+	return hd
 }
 
-type FoodTruckHandler struct {
-	FoodTruckService service.FoodTruckService
+type Handler struct {
+	Service service.Service
 }
 
-func (ft *FoodTruckHandler) HandleGetFoodTruckNearbyLocation(c *gin.Context) {
-	locationNearby, err := ft.validateLocationNearby(c)
+func (hd *Handler) HandleGetFoodTruckNearbyLocation(c *gin.Context) {
+	locationNearby, err := hd.validateLocationNearby(c)
 	if err != nil {
 		c.JSON(400, gin.H{"msg": err.Error()})
 		return
 	}
 
-	foodTrucksNearbyLocation, err := ft.FoodTruckService.GetFoodTruckNearbyLocation(locationNearby.Latitude, locationNearby.Longitude, locationNearby.RadiusInMiles)
+	foodTrucksNearbyLocation, err := hd.Service.GetNearbyLocation(locationNearby.Latitude, locationNearby.Longitude, locationNearby.RadiusInMiles)
 	if err != nil {
 		c.JSON(500, gin.H{"msg": err.Error()})
 		return
@@ -34,14 +34,14 @@ func (ft *FoodTruckHandler) HandleGetFoodTruckNearbyLocation(c *gin.Context) {
 	c.JSON(200, foodTrucksNearbyLocation)
 }
 
-func (ft *FoodTruckHandler) HandleGetFoodTruckLocation(c *gin.Context) {
-	location, err := ft.validateLocation(c)
+func (hd *Handler) HandleGetFoodTruckLocation(c *gin.Context) {
+	location, err := hd.validateLocation(c)
 	if err != nil {
 		c.JSON(400, gin.H{"msg": err.Error()})
 		return
 	}
 
-	foodTrucksLocation, err := ft.FoodTruckService.GetFoodTruckLocation(location.Latitude, location.Longitude)
+	foodTrucksLocation, err := hd.Service.GetLocation(location.Latitude, location.Longitude)
 	if err != nil {
 		c.JSON(500, gin.H{"msg": err.Error()})
 		return
@@ -49,9 +49,9 @@ func (ft *FoodTruckHandler) HandleGetFoodTruckLocation(c *gin.Context) {
 	c.JSON(200, foodTrucksLocation)
 }
 
-func (ft *FoodTruckHandler) HandleGetFoodTrucks(c *gin.Context) {
+func (hd *Handler) HandleGetFoodTrucks(c *gin.Context) {
 
-	foodTrucks, err := ft.FoodTruckService.GetFoodTrucks()
+	foodTrucks, err := hd.Service.GetFoodTrucks()
 	if err != nil {
 		c.JSON(500, gin.H{"msg": err.Error()})
 		return
@@ -59,7 +59,7 @@ func (ft *FoodTruckHandler) HandleGetFoodTrucks(c *gin.Context) {
 	c.JSON(200, foodTrucks)
 }
 
-func (ft *FoodTruckHandler) validateLocation(c *gin.Context) (*Location, error) {
+func (hd *Handler) validateLocation(c *gin.Context) (*Location, error) {
 	lat, ok := c.Params.Get("latitude")
 	if !ok {
 		return nil, errors.New("latitude param is empty")
@@ -82,8 +82,8 @@ func (ft *FoodTruckHandler) validateLocation(c *gin.Context) (*Location, error) 
 	}, nil
 }
 
-func (ft *FoodTruckHandler) validateLocationNearby(c *gin.Context) (*LocationNearby, error) {
-	loc, err := ft.validateLocation(c)
+func (hd *Handler) validateLocationNearby(c *gin.Context) (*LocationNearby, error) {
+	loc, err := hd.validateLocation(c)
 	if err != nil {
 		return nil, err
 	}

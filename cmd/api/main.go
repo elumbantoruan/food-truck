@@ -13,14 +13,14 @@ import (
 func main() {
 	url := "https://data.sfgov.org/api/views/rqzj-sfat/rows.csv"
 
-	repo := repository.NewFoodTruckRepository(url)
+	repo := repository.NewRepository(url)
 
-	srv, err := service.NewFoodTruckService(repo)
+	srv, err := service.NewService(repo)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	handler := handlers.NewFoodTruckHandler(srv)
+	handler := handlers.NewHandler(srv)
 
 	var text = `Welcome to Food Truck Service
 	The service opens up port 8088 and provides the following endpoints:

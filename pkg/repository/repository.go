@@ -4,29 +4,29 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"food-truck/pkg/data"
+	"food-truck/pkg/types"
 	"net/http"
 	"strconv"
 
 	"github.com/umahmood/haversine"
 )
 
-type FoodTruckRepository interface {
+type Repository interface {
 	BuildFoodTruckDataMap() error
-	GetFoodTruckNearbyLocation(lat float64, lon float64, radiusMiles float64) ([]data.FoodTruckNearby, error)
-	GetFoodTruckLocation(latitude float64, longitude float64) (*data.FoodTruckLocation, error)
-	GetFoodTrucks() ([]data.FoodTruckLocation, error)
+	GetFoodTruckNearbyLocation(lat float64, lon float64, radiusMiles float64) ([]types.FoodTruckNearby, error)
+	GetFoodTruckLocation(latitude float64, longitude float64) (*types.FoodTruckLocation, error)
+	GetFoodTrucks() ([]types.FoodTruckLocation, error)
 }
 
-func NewFoodTruckRepository(url string) FoodTruckRepository {
-	return &FoodTruckStorage{
-		MemoryStore: make(map[string]data.FoodTruckLocation),
+func NewRepository(url string) Repository {
+	return &Storage{
+		MemoryStore: make(map[string]types.FoodTruckLocation),
 		url:         url,
 	}
 }
 
-type FoodTruckStorage struct {
-	MemoryStore map[string]data.FoodTruckLocation
+type Storage struct {
+	MemoryStore map[string]types.FoodTruckLocation
 	url         string
 }
 
@@ -34,14 +34,14 @@ func genKey(lat float64, long float64) string {
 	return fmt.Sprintf("(%v,%v)", lat, long)
 }
 
-func (ft *FoodTruckStorage) BuildFoodTruckDataMap() error {
-	resp, err := http.Get(ft.url)
+func (st *Storage) BuildFoodTruckDataMap() error {
+	resp, err := http.Get(st.url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	var foodTrucksMap = make(map[string]data.FoodTruckLocation)
+	var foodTrucksMap = make(map[string]types.FoodTruckLocation)
 
 	csvReader := csv.NewReader(resp.Body)
 	var firstLine = 0 // header
@@ -58,7 +58,7 @@ func (ft *FoodTruckStorage) BuildFoodTruckDataMap() error {
 		key := genKey(foodTruck.Latitude, foodTruck.Longitude)
 		foodTrucksMap[key] = foodTruck
 	}
-	ft.MemoryStore = foodTrucksMap
+	st.MemoryStore = foodTrucksMap
 	return nil
 
 }
@@ -68,17 +68,17 @@ func (ft *FoodTruckStorage) BuildFoodTruckDataMap() error {
 // to get the list of food trucks given the radius of current lat/lon (location)
 // This is the poor implementation as it scans the whole records (O n)
 // Obviously there is a better way, but the purpose of this is just to provide a good user experience
-func (ft *FoodTruckStorage) GetFoodTruckNearbyLocation(lat float64, lon float64, radiusMiles float64) ([]data.FoodTruckNearby, error) {
-	var foodTrucksNearbies []data.FoodTruckNearby
+func (st *Storage) GetFoodTruckNearbyLocation(lat float64, lon float64, radiusMiles float64) ([]types.FoodTruckNearby, error) {
+	var foodTrucksNearbies []types.FoodTruckNearby
 	origin := haversine.Coord{Lat: lat, Lon: lon}
-	for _, foodtruck := range ft.MemoryStore {
+	for _, foodtruck := range st.MemoryStore {
 		if foodtruck.Latitude == float64(0) || foodtruck.Longitude == float64(0) {
 			continue
 		}
 		target := haversine.Coord{Lat: foodtruck.Latitude, Lon: foodtruck.Longitude}
 		miles, _ := haversine.Distance(origin, target)
 		if miles <= radiusMiles {
-			foodTruckNearby := data.FoodTruckNearby{
+			foodTruckNearby := types.FoodTruckNearby{
 				FoodTruckLocation: foodtruck,
 				DistanceInMiles:   miles,
 			}
@@ -90,27 +90,27 @@ func (ft *FoodTruckStorage) GetFoodTruckNearbyLocation(lat float64, lon float64,
 
 // GetFoodTruckLocation given latitude and longitude
 // Time complexity is 0(1) since data is stored in map
-func (ft *FoodTruckStorage) GetFoodTruckLocation(latitude float64, longitude float64) (*data.FoodTruckLocation, error) {
+func (st *Storage) GetFoodTruckLocation(latitude float64, longitude float64) (*types.FoodTruckLocation, error) {
 	key := genKey(latitude, longitude)
-	if fd, ok := ft.MemoryStore[key]; ok {
+	if fd, ok := st.MemoryStore[key]; ok {
 		return &fd, nil
 	}
 	return nil, errors.New("not found")
 }
 
-func (ft *FoodTruckStorage) GetFoodTrucks() ([]data.FoodTruckLocation, error) {
-	var foodTrucksLocation []data.FoodTruckLocation
-	for _, v := range ft.MemoryStore {
+func (st *Storage) GetFoodTrucks() ([]types.FoodTruckLocation, error) {
+	var foodTrucksLocation []types.FoodTruckLocation
+	for _, v := range st.MemoryStore {
 		foodTrucksLocation = append(foodTrucksLocation, v)
 	}
 	return foodTrucksLocation, nil
 }
 
-func parseFoodTruckLocation(items []string) data.FoodTruckLocation {
+func parseFoodTruckLocation(items []string) types.FoodTruckLocation {
 	lat, _ := strconv.ParseFloat(items[14], 64)
 	long, _ := strconv.ParseFloat(items[15], 64)
 
-	return data.FoodTruckLocation{
+	return types.FoodTruckLocation{
 		FoodTruckName:       items[1],
 		FacilityType:        items[2],
 		LocationDescription: items[4],

@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
-	"food-truck/pkg/data"
 	"food-truck/pkg/repository"
+	"food-truck/pkg/types"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -17,7 +17,7 @@ func TestFoodTruckHandler_HandleGetFoodTruckNearbyLocation(t *testing.T) {
 
 	var repo MockRepository
 	var srv = MockService{Repository: &repo}
-	var ft = NewFoodTruckHandler(&srv)
+	var ft = NewHandler(&srv)
 
 	r := getRouter()
 
@@ -29,7 +29,7 @@ func TestFoodTruckHandler_HandleGetFoodTruckNearbyLocation(t *testing.T) {
 
 		p, err := ioutil.ReadAll(w.Body)
 		assert.NoError(t, err)
-		var foodTrucksNearby []data.FoodTruckNearby
+		var foodTrucksNearby []types.FoodTruckNearby
 		json.Unmarshal(p, &foodTrucksNearby)
 
 		expectedData, _ := repo.GetFoodTruckNearbyLocation(1.05, 5.05, 1)
@@ -44,7 +44,7 @@ func TestFoodTruckHandler_HandleGetFoodTruckNearbyLocation_InvalidRadius(t *test
 
 	var repo MockRepository
 	var srv = MockService{Repository: &repo}
-	var ft = NewFoodTruckHandler(&srv)
+	var ft = NewHandler(&srv)
 
 	r := getRouter()
 
@@ -63,7 +63,7 @@ func TestFoodTruckHandler_HandleGetFoodTruckLocation(t *testing.T) {
 
 	var repo MockRepository
 	var srv = MockService{Repository: &repo}
-	var ft = NewFoodTruckHandler(&srv)
+	var ft = NewHandler(&srv)
 
 	r := getRouter()
 
@@ -75,7 +75,7 @@ func TestFoodTruckHandler_HandleGetFoodTruckLocation(t *testing.T) {
 
 		p, err := ioutil.ReadAll(w.Body)
 		assert.NoError(t, err)
-		var foodTruck data.FoodTruckLocation
+		var foodTruck types.FoodTruckLocation
 		json.Unmarshal(p, &foodTruck)
 
 		expectedData, _ := repo.GetFoodTruckLocation(1.05, 5.05)
@@ -90,7 +90,7 @@ func TestFoodTruckHandler_HandleGetFoodTrucksLocation(t *testing.T) {
 
 	var repo MockRepository
 	var srv = MockService{Repository: &repo}
-	var ft = NewFoodTruckHandler(&srv)
+	var ft = NewHandler(&srv)
 
 	r := getRouter()
 
@@ -102,7 +102,7 @@ func TestFoodTruckHandler_HandleGetFoodTrucksLocation(t *testing.T) {
 
 		p, err := ioutil.ReadAll(w.Body)
 		assert.NoError(t, err)
-		var foodTruck []data.FoodTruckLocation
+		var foodTruck []types.FoodTruckLocation
 		json.Unmarshal(p, &foodTruck)
 
 		expectedData, _ := repo.GetFoodTrucks()
@@ -131,7 +131,7 @@ func getRouter() *gin.Engine {
 	return gin.Default()
 }
 
-func createMockFoodTrucksNearby() []data.FoodTruckNearby {
+func createMockFoodTrucksNearby() []types.FoodTruckNearby {
 	text := `[
 		{
 			"food_truck_name": "Datam SF LLC dba Anzu To You",
@@ -167,12 +167,12 @@ func createMockFoodTrucksNearby() []data.FoodTruckNearby {
 			"distance_in_miles": 0.8735059296153723
 		}
 	]`
-	var records []data.FoodTruckNearby
+	var records []types.FoodTruckNearby
 	_ = json.Unmarshal([]byte(text), &records)
 	return records
 }
 
-func createMockFoodTrucksLocation() []data.FoodTruckLocation {
+func createMockFoodTrucksLocation() []types.FoodTruckLocation {
 	text := `[
 		{
 			"food_truck_name": "Datam SF LLC dba Anzu To You",
@@ -205,7 +205,7 @@ func createMockFoodTrucksLocation() []data.FoodTruckLocation {
 			"schedules": ""
 		}
 	]`
-	var records []data.FoodTruckLocation
+	var records []types.FoodTruckLocation
 	_ = json.Unmarshal([]byte(text), &records)
 	return records
 }
@@ -216,32 +216,32 @@ func (mr *MockRepository) BuildFoodTruckDataMap() error {
 	return nil
 }
 
-func (mr *MockRepository) GetFoodTruckNearbyLocation(lat float64, lon float64, radiusMiles float64) ([]data.FoodTruckNearby, error) {
+func (mr *MockRepository) GetFoodTruckNearbyLocation(lat float64, lon float64, radiusMiles float64) ([]types.FoodTruckNearby, error) {
 	return createMockFoodTrucksNearby(), nil
 }
 
-func (mr *MockRepository) GetFoodTruckLocation(latitude float64, longitude float64) (*data.FoodTruckLocation, error) {
+func (mr *MockRepository) GetFoodTruckLocation(latitude float64, longitude float64) (*types.FoodTruckLocation, error) {
 	data := createMockFoodTrucksLocation()
 	return &data[0], nil
 }
 
-func (mr *MockRepository) GetFoodTrucks() ([]data.FoodTruckLocation, error) {
+func (mr *MockRepository) GetFoodTrucks() ([]types.FoodTruckLocation, error) {
 	return createMockFoodTrucksLocation(), nil
 }
 
 type MockService struct {
-	Repository repository.FoodTruckRepository
+	Repository repository.Repository
 }
 
-func (ms *MockService) GetFoodTruckNearbyLocation(lat float64, long float64, radiusMiles float64) ([]data.FoodTruckNearby, error) {
+func (ms *MockService) GetNearbyLocation(lat float64, long float64, radiusMiles float64) ([]types.FoodTruckNearby, error) {
 	return ms.Repository.GetFoodTruckNearbyLocation(lat, long, radiusMiles)
 }
 
-func (ms *MockService) GetFoodTruckLocation(latitude float64, longitude float64) (*data.FoodTruckLocation, error) {
+func (ms *MockService) GetLocation(latitude float64, longitude float64) (*types.FoodTruckLocation, error) {
 	data, _ := ms.Repository.GetFoodTruckLocation(latitude, longitude)
 	return data, nil
 }
 
-func (ms *MockService) GetFoodTrucks() ([]data.FoodTruckLocation, error) {
+func (ms *MockService) GetFoodTrucks() ([]types.FoodTruckLocation, error) {
 	return ms.Repository.GetFoodTrucks()
 }

@@ -1,4 +1,4 @@
-package data
+package types
 
 type FoodTruckLocation struct {
 	FoodTruckName       string  `json:"food_truck_name"`
